@@ -25,15 +25,15 @@ router.post("/send-email-otp", (req, res) => {
     [email, otp, expires, otp, expires],
     async (err) => {
       if (err) {
-        console.error(err);
-        return res.status(500).json({ message: "OTP failed" });
+        console.error("DB ERROR:", err);
+        return res.status(500).json({ message: "OTP database error" });
       }
 
       try {
         await sendEmailOtp(email, otp);
         res.json({ message: "OTP sent to email" });
       } catch (error) {
-        console.error("Email error:", error);
+        console.error("EMAIL ERROR:", error);
         res.status(500).json({ message: "Email sending failed" });
       }
     }
