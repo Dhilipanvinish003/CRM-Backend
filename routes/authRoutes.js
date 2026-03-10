@@ -29,8 +29,13 @@ router.post("/send-email-otp", (req, res) => {
         return res.status(500).json({ message: "OTP failed" });
       }
 
-      await sendEmailOtp(email, otp);
-      res.json({ message: "OTP sent to email" });
+      try {
+        await sendEmailOtp(email, otp);
+        res.json({ message: "OTP sent to email" });
+      } catch (error) {
+        console.error("Email error:", error);
+        res.status(500).json({ message: "Email sending failed" });
+      }
     }
   );
 });
