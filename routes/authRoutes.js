@@ -7,6 +7,8 @@ const sendEmailOtp = require("../backendutil/sendSms");
 
 const router = express.Router();
 
+/* ================= SEND EMAIL OTP ================= */
+
 router.post("/send-email-otp", async (req, res) => {
   const { email } = req.body;
 
@@ -39,7 +41,8 @@ router.post("/send-email-otp", async (req, res) => {
   );
 });
 
-/*  REGISTER  */
+/* ================= REGISTER ================= */
+
 router.post("/register", async (req, res) => {
   const { first_name, email, otp, user_password, role } = req.body;
 
@@ -52,6 +55,11 @@ router.post("/register", async (req, res) => {
      WHERE email=? AND otp=? AND expires_at > NOW()`,
     [email, otp],
     async (err, rows) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Database error" });
+      }
+
       if (!rows.length) {
         return res.status(400).json({ message: "Invalid or expired OTP" });
       }
@@ -69,10 +77,11 @@ router.post("/register", async (req, res) => {
                 .status(409)
                 .json({ message: "Email already registered" });
             }
+
+            console.error(err);
             return res.status(500).json({ message: "Server error" });
           }
 
-          // delete OTP after success
           db.query(`DELETE FROM email_otp WHERE email=?`, [email]);
 
           res.json({ message: "Registered successfully" });
@@ -82,7 +91,8 @@ router.post("/register", async (req, res) => {
   );
 });
 
-/*  LOGIN (EMAIL + OTP) */
+/* ================= LOGIN ================= */
+
 router.post("/login", (req, res) => {
   const { email, otp } = req.body;
 
@@ -97,7 +107,10 @@ router.post("/login", (req, res) => {
      WHERE u.email=? AND o.otp=? AND o.expires_at > NOW()`,
     [email, otp],
     (err, rows) => {
-      if (err) return res.status(500).json({ message: "Server error" });
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Server error" });
+      }
 
       if (!rows.length) {
         return res.status(401).json({ message: "Invalid or expired OTP" });
@@ -111,7 +124,6 @@ router.post("/login", (req, res) => {
         { expiresIn: "1d" }
       );
 
-      // delete OTP after successful login
       db.query(`DELETE FROM email_otp WHERE email=?`, [email]);
 
       res.json({
@@ -127,7 +139,7 @@ router.post("/login", (req, res) => {
   );
 });
 
-/* ================= GET ALL USERS ================= */
+/* ================= GET USERS ================= */
 
 router.get("/users", (req, res) => {
   const query = `
@@ -147,6 +159,7 @@ router.get("/users", (req, res) => {
       console.error("Error fetching users:", err);
       return res.status(500).json({ message: "Database error" });
     }
+
     res.json(results);
   });
 });
