@@ -7,8 +7,7 @@ const sendEmailOtp = require("../backendutil/sendSms");
 
 const router = express.Router();
 
-/* ================= SEND EMAIL OTP ================= */
-router.post("/send-email-otp", (req, res) => {
+router.post("/send-email-otp", async (req, res) => {
   const { email } = req.body;
 
   if (!email) {
